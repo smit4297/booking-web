@@ -13,6 +13,7 @@ import {
     CaptchaResponse
 } from '@/types/irctc';
 import { SearchSelectInput } from './SearchSelectInput';
+import { Eye, EyeOff } from "lucide-react";
 
 interface ClassOption {
   value: string;
@@ -55,6 +56,7 @@ export const IrctcBookingForm: React.FC = () => {
   const [loginComplete, setLoginComplete] = useState<boolean>(false);
   const [bookingInitialized, setBookingInitialized] = useState<boolean>(false);
   const [initializationData, setInitializationData] = useState<InitializeBookingResponse | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const classOptions: ClassOption[] = [
     { value: '2A', label: '2-Tier AC' },
@@ -255,14 +257,25 @@ const handleFinalSubmit = async () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Password</label>
-                <input
-                  type="password"
+                <div className="relative">
+                  <input
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
                   className="w-full p-2 border rounded"
                   required
-                />
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-2 flex items-center"
+                    >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -510,20 +523,14 @@ const handleFinalSubmit = async () => {
                     )}
 
                     {/* Display booking response or errors */}
-                    {bookingResponse?.data?.body?.userDetaillastTxnStatus && (
-                        <Alert className="bg-green-50 text-green-700 border border-green-300">
-                            <AlertTitle>Booking Response</AlertTitle>
-                            <AlertDescription>
-                                <pre className="whitespace-pre-wrap">{bookingResponse.data.body.userDetaillastTxnStatus || `not booked`}</pre>
-                            </AlertDescription>
-                        </Alert>
-                    )}
 
                     {bookingResponse?.data?.body.bookingResponseDTO[0]?.psgnDtlList[0]?.bookingStatusDetails && (
                         <Alert className="bg-green-50 text-green-700 border border-green-300">
                             <AlertTitle>Booking Response</AlertTitle>
                             <AlertDescription>
-                                <pre className="whitespace-pre-wrap">{bookingResponse.data.body.bookingResponseDTO[0].psgnDtlList[0].bookingStatusDetails || `booked`}</pre>
+                                <pre className="whitespace-pre-wrap">
+                                    {bookingResponse.data.body.bookingResponseDTO[0].psgnDtlList[0].bookingStatusDetails || `booked`}
+                                </pre>
                             </AlertDescription>
                         </Alert>
                     )}
