@@ -142,11 +142,9 @@ export const IrctcBookingForm: React.FC = () => {
         });
 
         const data: any = await response.json();
-      //  console.log("---------------------------------------" + JSON.stringify(data) + response)
 
         setInitializationData(data);
         setBookingInitialized(true);
-        console.log("formData.userID" + formData.userID)
         // Get Login Captcha
         const loginCaptchaResponse = await fetch('/api/get-login-captcha', {
             method: 'POST',
