@@ -512,20 +512,20 @@ const handleFinalSubmit = async () => {
                     )}
 
                     {/* Display booking response or errors */}
-                    {bookingResponse?.data.body.userDetaillastTxnStatus && (
+                    {bookingResponse?.data?.body?.userDetaillastTxnStatus && (
                         <Alert className="bg-green-50 text-green-700 border border-green-300">
                             <AlertTitle>Booking Response</AlertTitle>
                             <AlertDescription>
-                                <pre className="whitespace-pre-wrap">{bookingResponse.data.body.userDetaillastTxnStatus}</pre>
+                                <pre className="whitespace-pre-wrap">{bookingResponse.data.body.userDetaillastTxnStatus || `not booked`}</pre>
                             </AlertDescription>
                         </Alert>
                     )}
 
-                    {bookingResponse?.data.body.bookingResponseDTO[0].psgnDtlList[0].bookingStatusDetails && (
+                    {bookingResponse?.data?.body.bookingResponseDTO[0]?.psgnDtlList[0]?.bookingStatusDetails && (
                         <Alert className="bg-green-50 text-green-700 border border-green-300">
                             <AlertTitle>Booking Response</AlertTitle>
                             <AlertDescription>
-                                <pre className="whitespace-pre-wrap">{bookingResponse.data.body.bookingResponseDTO[0].psgnDtlList[0].bookingStatusDetails}</pre>
+                                <pre className="whitespace-pre-wrap">{bookingResponse.data.body.bookingResponseDTO[0].psgnDtlList[0].bookingStatusDetails || `booked`}</pre>
                             </AlertDescription>
                         </Alert>
                     )}
