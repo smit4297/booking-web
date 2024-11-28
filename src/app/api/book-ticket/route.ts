@@ -1,76 +1,50 @@
 import { NextResponse } from 'next/server';
 import { IRCTC, login, getBookingCaptcha, confirmBooking, payment_mode_selection } from 'train-book-web';
 import { BookingFormData } from '@/types/irctc';
-
- const irctcInstances = new Map<string, IRCTC>();
-
-// @ts-ignore
-export async function getOrCreateInstance(userID: string, password: string): Promise<IRCTC> {
-    if (irctcInstances.has(userID)) {
-        return irctcInstances.get(userID) as IRCTC;
-    }
-    const irctc = new IRCTC({ userID, password });
-    irctcInstances.set(userID, irctc);
-    return irctc;
-}
-
-let initialParams: Record<string, any> = {};
-let params: Record<string, any> = {}; 
-
+import { getOrCreateInstance, getOrInitializeUserState, clearUserState } from '@/lib/irctcState';
 
 export async function POST(request: Request) {
-  let body: BookingFormData; 
+    let body: BookingFormData;
 
+    try {
+        body = await request.json();
+        const { userID, password, loginCaptchaAnswer, bookingCaptchaAnswer, params1, ...bookingParams } = body;
 
-  try {
-      body = await request.json(); 
+        if (!userID) {
+            throw new Error("Missing userID");
+        }
 
-      const { userID, password, loginCaptchaAnswer, bookingCaptchaAnswer, params1, ...bookingParams } = body;
+        const irctc = await getOrCreateInstance(userID, password);
+        const userState = getOrInitializeUserState(userID);
 
-      const irctc = await getOrCreateInstance(userID, password);
+        if (!loginCaptchaAnswer && !bookingCaptchaAnswer) {
+            userState.initialParams = await irctc.initializeBooking(bookingParams);
+            return NextResponse.json({ success: true, data: userState.initialParams });
+        }
 
-      if (!loginCaptchaAnswer && !bookingCaptchaAnswer) {
-    
+        if (loginCaptchaAnswer && !bookingCaptchaAnswer) {
+            userState.params = { ...params1.data, ...irctc };
+            userState.params = await login(userState.params, 3, loginCaptchaAnswer);
+            userState.params = await irctc.booking2(userState.params);
+            const bookingCaptchaImg = await getBookingCaptcha(userState.params);
 
-          initialParams = await irctc.initializeBooking(bookingParams);
+            return NextResponse.json({ success: true, data: userState.params, bookingCaptcha: bookingCaptchaImg });
+        }
 
-          return NextResponse.json({ success: true, data: initialParams });
-      } 
-      
-      if (loginCaptchaAnswer && !bookingCaptchaAnswer) {
-          // Ensure initialParams are included before making further calls
-          params = {...params1.data, ...irctc}
-          params = await login(params, 3, loginCaptchaAnswer);
+        if (bookingCaptchaAnswer) {
+            const confirmedParams = await confirmBooking(userState.params, bookingCaptchaAnswer);
+            const response = await payment_mode_selection(confirmedParams);
 
-          // params = { ...initialParams, ...params, ...bookingParams, ...params1, browse: irctc.browse }; 
+            clearUserState(userID);
+            return NextResponse.json({ success: true, data: response });
+        }
 
-          params = await irctc.booking2(params); 
-          const bookingCaptchaImg = await getBookingCaptcha( params);
-
-          return NextResponse.json({ success: true, data: params, bookingCaptcha: bookingCaptchaImg });
-      } 
-      
-      if (bookingCaptchaAnswer) {
-
-        
-          // Pass all accumulated params into the final booking stage
-          const confirmedParams = await confirmBooking(params, bookingCaptchaAnswer);
-
-
-          const response = await payment_mode_selection(confirmedParams);
-
-          return NextResponse.json({ success: true, data: response });
-      }
-
-      throw new Error("Invalid request state");
-  } catch (error: any) {
-      console.error("Error during booking process:", error.message);
-
-      if (body?.userID) {
-          irctcInstances.delete(body.userID);
-      }
-      return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+        throw new Error("Invalid request state");
+    } catch (error: any) {
+        console.error("Error during booking process:", error.message);
+        if (body?.userID) {
+            clearUserState(body.userID);
+        }
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 }
-
-

@@ -1,24 +1,21 @@
 import { NextResponse } from 'next/server';
-// import { getLoginCaptcha } from 'train-book-web'; // Import your function
-import { getOrCreateInstance } from '../book-ticket/route' // Import the irctcInstances map
-import { IRCTC, getLoginCaptcha, login, getBookingCaptcha, confirmBooking, payment_mode_selection } from 'train-book-web';
-
-
+import { IRCTC, getLoginCaptcha } from 'train-book-web';
+import { getOrCreateInstance } from '@/lib/irctcState';
 
 export async function POST(request: Request) {
     try {
-       const { userID, csrf, password } = await request.json();
-       const irctc : IRCTC = await getOrCreateInstance(userID, password); // Get the instance
-       if (!irctc) {
-        return NextResponse.json({ error: "IRCTC instance not found" }, { status: 400 });
+        const { userID, csrf, password } = await request.json();
+
+        if (!userID || !csrf || !password) {
+            return NextResponse.json({ error: "Missing required fields (userID, csrf, password)" }, { status: 400 });
         }
 
+        const irctc: IRCTC = await getOrCreateInstance(userID, password);
         const captchaImage = await getLoginCaptcha(irctc, csrf);
+
         return NextResponse.json({ captchaImage });
     } catch (error: any) {
-        // ... error handling
-
-        console.log(error)
-        return NextResponse.json({ error: error.message }, { status: 500 }); 
+        console.error("Error in login captcha generation:", error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

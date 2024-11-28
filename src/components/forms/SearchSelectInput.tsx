@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-export const SearchSelectInput = ({ label, value, onChange, placeholder }) => {
+
+export const SearchSelectInput = ({ label, name, value, onChange, placeholder }) => {
   const [searchText, setSearchText] = useState('');
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -39,7 +40,7 @@ export const SearchSelectInput = ({ label, value, onChange, placeholder }) => {
 
   const handleOptionSelect = (option) => {
     setSearchText(option);
-    onChange(option);
+    onChange({ target: { name, value: option } }); // Update formData
     setShowDropdown(false);
   };
 

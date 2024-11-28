@@ -12,6 +12,7 @@ import {
     InitializeBookingResponse,
     CaptchaResponse
 } from '@/types/irctc';
+import { SearchSelectInput } from './SearchSelectInput';
 
 interface ClassOption {
   value: string;
@@ -281,30 +282,22 @@ const handleFinalSubmit = async () => {
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">From Station</label>
-                <input
-                  type="text"
-                  name="from"
-                  value={formData.from}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded uppercase"
-                  maxLength={3}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">To Station</label>
-                <input
-                  type="text"
-                  name="to"
-                  value={formData.to}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded uppercase"
-                  maxLength={3}
-                  required
-                />
-              </div>
+              <SearchSelectInput
+                label="From Station"
+                name="from" // Name matches the key in formData
+                value={formData.from} // Bind value from formData
+                onChange={handleInputChange} // Update formData
+                placeholder="Search station"
+              />
+
+              <SearchSelectInput
+                label="To Station"
+                name="to" // Name matches the key in formData
+                value={formData.to} // Bind value from formData
+                onChange={handleInputChange} // Update formData
+                placeholder="Search station"
+              />
+
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -454,10 +447,6 @@ const handleFinalSubmit = async () => {
                 </div>
               ))}
             </div>
-
-              
-            
-
             {/* Error Display */}
             {error && (
               <Alert variant="destructive">
@@ -523,14 +512,24 @@ const handleFinalSubmit = async () => {
                     )}
 
                     {/* Display booking response or errors */}
-                    {bookingResponse && (
+                    {bookingResponse?.data.body.userDetaillastTxnStatus && (
                         <Alert className="bg-green-50 text-green-700 border border-green-300">
                             <AlertTitle>Booking Response</AlertTitle>
                             <AlertDescription>
-                                <pre className="whitespace-pre-wrap">{JSON.stringify(bookingResponse, null, 2)}</pre>
+                                <pre className="whitespace-pre-wrap">{bookingResponse.data.body.userDetaillastTxnStatus}</pre>
                             </AlertDescription>
                         </Alert>
                     )}
+
+                    {bookingResponse?.data.body.bookingResponseDTO[0].psgnDtlList[0].bookingStatusDetails && (
+                        <Alert className="bg-green-50 text-green-700 border border-green-300">
+                            <AlertTitle>Booking Response</AlertTitle>
+                            <AlertDescription>
+                                <pre className="whitespace-pre-wrap">{bookingResponse.data.body.bookingResponseDTO[0].psgnDtlList[0].bookingStatusDetails}</pre>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
                     {error && (
                         <Alert className="bg-red-50 text-red-700 border border-red-300">
                             <AlertTitle>Error</AlertTitle>
@@ -561,7 +560,7 @@ const handleFinalSubmit = async () => {
                 </CardHeader>
                 <CardContent>
                   <pre className="bg-gray-100 p-4 rounded overflow-x-auto">
-                    {JSON.stringify(bookingResponse, null, 2)}
+                  {JSON.stringify(bookingResponse, null, 2)}
                   </pre>
                 </CardContent>
               </Card>
@@ -569,10 +568,6 @@ const handleFinalSubmit = async () => {
           )}
         </CardContent>
       </Card>
-
-
-      
-
       
     </div>
   );
