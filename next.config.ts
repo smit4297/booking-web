@@ -31,6 +31,9 @@ const nextConfig = {
     // Skip type checking during build
     ignoreBuildErrors: true,
   },
+  serverless: {
+    maxDuration: 60
+  }
 };
 export default nextConfig;
 
