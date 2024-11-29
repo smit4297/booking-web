@@ -31,7 +31,7 @@
     "stream-http": "^3.2.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
-    "train-book-web": "^0.0.6",
+    "train-book-web": "^0.0.7",
     "url": "^0.11.4",
     "util": "^0.12.5"
   },
